@@ -39,11 +39,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Notification Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Notification Demo Home Page'),
     );
   }
 }
@@ -58,52 +58,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String token;
   int _counter = 0;
 
   @override
   void initState() {
     super.initState();
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      RemoteNotification notification = message.notification;
-      AndroidNotification android = message.notification?.android;
-      if (notification != null && android != null) {
-        flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
-              android: AndroidNotificationDetails(
-                channel.id,
-                channel.name,
-                channel.description,
-                color: Colors.blue,
-                playSound: true,
-                icon: '@mipmap/ic_launcher',
-              ),
-            ));
-      }
-    });
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('A new onMessageOpenedApp event was published!');
-      RemoteNotification notification = message.notification;
-      AndroidNotification android = message.notification?.android;
-      if (notification != null && android != null) {
-        showDialog(
-            context: context,
-            builder: (_) {
-              return AlertDialog(
-                title: Text(notification.title),
-                content: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [Text(notification.body)],
-                  ),
-                ),
-              );
-            });
-      }
-    });
   }
 
   void showNotification() {
@@ -113,13 +73,21 @@ class _MyHomePageState extends State<MyHomePage> {
     flutterLocalNotificationsPlugin.show(
         0,
         "Testing $_counter",
-        "How you doin ?",
+        "Chào bạn ?",
         NotificationDetails(
             android: AndroidNotificationDetails(channel.id, channel.name, channel.description,
                 importance: Importance.high,
                 color: Colors.blue,
                 playSound: true,
                 icon: '@mipmap/ic_launcher')));
+  }
+
+  void getToken() async {
+    token = await FirebaseMessaging.instance.getToken();
+    setState(() {
+      token = token;
+    });
+    print(token);
   }
 
   @override
@@ -133,7 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'You have pushed the button this many times:',
+              'Số lần nhấn:',
             ),
             Text(
               '$_counter',
@@ -143,7 +111,10 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: showNotification,
+        onPressed: () {
+          showNotification();
+          getToken();
+        },
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ),
